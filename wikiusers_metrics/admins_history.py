@@ -3,10 +3,11 @@ from pathlib import Path
 from typing import Union
 from matplotlib import pyplot as plt
 
-from wikiusers import settings
+from wikiusers import settings as wu_settings
 from wikiusers import logger
 
-from .utils import Batcher, get_month_date_from_key
+import settings
+from utils import Batcher, get_month_date_from_key
 
 
 class AdminsHistory:
@@ -43,9 +44,9 @@ class AdminsHistory:
 
     def __init__(
         self,
-        lang: str = settings.DEFAULT_LANGUAGE,
-        database: str = settings.DEFAULT_DATABASE_PREFIX,
-        batch_size: str = settings.DEFAULT_BATCH_SIZE,
+        lang: str = wu_settings.DEFAULT_LANGUAGE,
+        database: str = wu_settings.DEFAULT_DATABASE_PREFIX,
+        batch_size: str = wu_settings.DEFAULT_BATCH_SIZE,
         metrics_path: Union[str, Path] = settings.DEFAULT_METRICS_DIR
     ):
         self.lang = lang
@@ -79,14 +80,11 @@ class AdminsHistory:
         logger.succ(f'Finished saving json', lang=self.lang,
                     scope=f'DEAD ADMINS HISTORY')
 
-    @staticmethod
-    def show_graphs(
-        lang: str = settings.DEFAULT_LANGUAGE,
-        metrics_path: Union[str, Path] = settings.DEFAULT_METRICS_DIR
+    def save_graphs(
+        self,
     ) -> None:
-        metrics_path = Path(metrics_path)
-        path_root = metrics_path.joinpath(lang).joinpath(f'admins_history')
-        dest_root = metrics_path.joinpath(lang).joinpath(f'admins_history').joinpath('graphs')
+        path_root = self.metrics_path.joinpath(self.lang).joinpath(f'admins_history')
+        dest_root = self.metrics_path.joinpath(self.lang).joinpath(f'admins_history').joinpath('graphs')
         dest_root.mkdir(exist_ok=True)
         files = [file for file in path_root.iterdir() if file.is_file()]
 
@@ -109,3 +107,10 @@ class AdminsHistory:
                 plt.legend()
                 plt.savefig(dest_root.joinpath(f'{name}.png'), bbox_inches='tight')
                 plt.clf()
+
+
+if __name__ == '__main__':  
+    metricher = AdminsHistory(lang='ca')
+    metricher.compute()
+    metricher.save_json()
+    metricher.save_graphs()

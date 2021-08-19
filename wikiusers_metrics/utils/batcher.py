@@ -14,12 +14,14 @@ class Batcher:
         database: str,
         lang: str,
         batch_size: int,
-        query_filter: dict = {}
+        query_filter: dict = {},
+        query_projector: dict = None
     ):
         self.database = database
         self.lang = lang
         self.batch_size = batch_size
         self.query_filter = query_filter
+        self.query_projector = query_projector
         self.__init_connection()
         self.batch_index = 0
 
@@ -28,7 +30,7 @@ class Batcher:
 
     def __next__(self):
         data = list(
-            self.collection.find(self.query_filter)
+            self.collection.find(self.query_filter, self.query_projector)
                 .skip(self.batch_size * self.batch_index)
                 .limit(self.batch_size)
         )
